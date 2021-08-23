@@ -10,6 +10,7 @@ func main() {
 	sliceOfBytes := []byte{1, 2, 3, 4, 'a', 'b', 'c', 'd'}
 
 	sliceOfBytes = createSliceOfBytesFromBuffer()
+	sliceOfBytes = append(sliceOfBytes, 'B', 'Y', 'E')
 
 	log.Println("The length of items in the byte slice is " + fmt.Sprint(len(sliceOfBytes)))
 
