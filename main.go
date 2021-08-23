@@ -11,10 +11,13 @@ func main() {
 
 	sliceOfBytes = createSliceOfBytesFromBuffer()
 
+	log.Println("The length of items in the byte slice is " + fmt.Sprint(len(sliceOfBytes)))
+
 	for index, byteValue := range sliceOfBytes {
 		indexString := fmt.Sprint(index)
-		log.Println("Value at " + indexString + ": " + string(byteValue))
+		log.Println("Value at " + indexString + ": \"" + string(byteValue) + "\" == " + fmt.Sprint(byteValue))
 	}
+
 }
 
 func createSliceOfBytesFromBuffer() []byte {
@@ -22,7 +25,7 @@ func createSliceOfBytesFromBuffer() []byte {
 	bytesBuffer.WriteByte(42)
 	bytesBuffer.WriteByte(13)
 	bytesBuffer.WriteByte('a')  // ascii # 97
-	bytesBuffer.WriteByte('\n') // ascii # 13
+	bytesBuffer.WriteByte('\n') // ascii # 10
 	bytesBuffer.WriteByte(255)  // Largest byte value (hex: 0xFF, octal: 077, binary: 0b11111111, "ÿ")
 	// bytesBuffer.WriteByte(256) // Invalid
 	// bytesBuffer.WriteByte(666) // Invalid
