@@ -36,7 +36,15 @@ func main() {
 	}
 
 	var startTime = time.Now()
-	sortedTargets := getSortedVersion(randomSortTargets, func(target sortTarget) int { return int(target.property2 * float32(100)) })
+
+	// What is the "ideal" way to assign an integer value to data without exploding the bucket length?
+	// The negative trade-off of counting sort appears to be that it claims a high amount of memory
+	// if there is a wide range of possible values.
+	evaluator := func(target sortTarget) int {
+		return int(target.property2 * float32(100))
+	}
+
+	sortedTargets := getSortedVersion(randomSortTargets, evaluator)
 	for _, target := range sortedTargets {
 		fmt.Print(target.property2, ", ")
 	}
