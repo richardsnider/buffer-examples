@@ -3,7 +3,6 @@ package main
 import (
 	crand "crypto/rand"
 	mrand "math/rand"
-	"sort"
 	"time"
 
 	"encoding/binary"
@@ -31,48 +30,49 @@ func main() {
 	var src cryptoSource
 	rand := mrand.New(src)
 
-	var randomIntegers []int
-	for i := 0; i < 100000; i++ {
-		randomIntegers = append(randomIntegers, rand.Intn(100))
+	var randomSortTargets []sortTarget
+	for i := 0; i < 100; i++ {
+		randomSortTargets = append(randomSortTargets, sortTarget{property2: rand.Float32()})
 	}
 
-	var startTime, endTime time.Time
-
-	startTime = time.Now()
-	sort.Ints(randomIntegers)
-	endTime = time.Now()
-	fmt.Println(endTime.Sub(startTime))
-
-	startTime = time.Now()
-	_ = countingSort(randomIntegers)
-	endTime = time.Now()
-	fmt.Println(endTime.Sub(startTime))
-
+	var startTime = time.Now()
+	sortedTargets := getSortedVersion(randomSortTargets, func(target sortTarget) int { return int(target.property2 * float32(100)) })
+	for _, target := range sortedTargets {
+		fmt.Print(target.property2, ", ")
+	}
+	fmt.Println(time.Since(startTime))
 }
 
-func countingSort(data []int) []int {
+type sortTarget struct {
+	property1 int
+	property2 float32
+}
+
+func getSortedVersion(data []sortTarget, evaluator func(target sortTarget) int) []sortTarget {
 	var maxValue int
-	for _, integer := range data {
-		if integer > maxValue {
-			maxValue = integer
+	for _, element := range data {
+		var currentValue = evaluator(element)
+		if currentValue > maxValue {
+			maxValue = currentValue
 		}
 	}
 
 	bucketLen := maxValue + 1
-	bucket := make([]int, bucketLen)
+	bucket := make([][]sortTarget, bucketLen)
 
 	sortedIndex := 0
 	length := len(data)
 
 	for i := 0; i < length; i++ {
-		bucket[data[i]]++
+		var bla = evaluator(data[i])
+		bucket[bla] = append(bucket[bla], data[i])
 	}
 
-	for j := 0; j < bucketLen; j++ {
-		for bucket[j] > 0 {
-			data[sortedIndex] = j
+	for i := 0; i < bucketLen; i++ {
+		for len(bucket[i]) > 0 {
+			data[sortedIndex] = bucket[i][0]
 			sortedIndex++
-			bucket[j]--
+			bucket[i] = bucket[i][1:len(bucket[i])]
 		}
 	}
 	return data
