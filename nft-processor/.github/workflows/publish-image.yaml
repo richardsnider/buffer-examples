@@ -1,0 +1,38 @@
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+# https://docs.github.com/en/actions/learn-github-actions/environment-variables
+name: publish-image
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - .github
+  workflow_dispatch:
+    inputs:
+      manual-workflow-comment:
+        description: Manual workflow_dispatch needs at least one input parameter. Use this for comments on the reason for running the workflow manually.
+        required: false
+        default: Manual workflow_dispatch trigger
+env:
+  IMAGE_NAME: ghcr.io/${{github.repository}}
+  MAJOR_VERSION: '0.0'
+defaults:
+  run:
+    shell: bash -ex {0} # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#custom-shell
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2 # https://github.com/actions/checkout/blob/main/action.yml
+      - run: |
+          export SEMANTIC_VERSION=$MAJOR_VERSION.$GITHUB_RUN_NUMBER
+          sudo docker build $GITHUB_WORKSPACE \
+          --build-arg BUILD_COMMIT=$GITHUB_SHA \
+          --tag $IMAGE_NAME:$GITHUB_SHA \
+          --tag $IMAGE_NAME:$SEMANTIC_VERSION
+          --tag $IMAGE_NAME:latest
+          echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          sudo docker push $IMAGE_NAME --all-tags
+          git tag $SEMANTIC_VERSION
+          git push origin $SEMANTIC_VERSION
